@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diego & Elsa · Dos años de la manita</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300;1,9..144,500&family=Outfit:wght@300;400;600&display=swap"
+      rel="stylesheet">
+    <link rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🫶%3C/text%3E%3C/svg%3E">
+
+    <style>
+/* =========================================================
+   VARIABLES Y BASE
+   ========================================================= */
+:root{
+  --ink:#eaf6ff;
+  --ink-soft:#b9d7ea;
+  --coral:#ff9a8b;
+  --pink:#ff6f91;
+  --sand:#f6dcc0;
+  --aqua:#5ee7df;
+  --deep:#021226;
+  --glass:rgba(255,255,255,.07);
+  --glass-brd:rgba(255,255,255,.16);
+  --depth:0;               /* 0 superficie → 1 fondo (lo actualiza JS) */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Outfit',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--deep);
+  overflow-x:hidden;
+  line-height:1.65;
+}
+body.locked{overflow:hidden}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+::selection{background:var(--pink);color:#fff}
+
+/* =========================================================
+   CAPAS FIJAS DEL ACUARIO
+   ========================================================= */
+#ocean{position:fixed;inset:0;z-index:-5;transition:background .4s linear}
+.rays{
+  position:fixed;inset:-10% -20% auto;height:90vh;z-index:-4;pointer-events:none;
+  background:
+    repeating-linear-gradient(100deg,transparent 0 6%,rgba(255,255,255,.07) 7% 9%,transparent 10% 16%);
+  mask-image:linear-gradient(to bottom,#000,transparent);
+  -webkit-mask-image:linear-gradient(to bottom,#000,transparent);
+  opacity:calc(1 - var(--depth) * 1.4);
+  animation:rays 14s ease-in-out infinite alternate;
+  filter:blur(6px);
+}
+@keyframes rays{to{transform:translateX(6%) skewX(-4deg)}}
+.caustics{
+  position:fixed;inset:0;z-index:-4;pointer-events:none;mix-blend-mode:overlay;
+  background:
+    radial-gradient(ellipse 30% 20% at 20% 10%,rgba(255,255,255,.18),transparent 70%),
+    radial-gradient(ellipse 25% 15% at 70% 5%,rgba(255,255,255,.15),transparent 70%),
+    radial-gradient(ellipse 35% 18% at 50% 18%,rgba(255,255,255,.1),transparent 70%);
+  animation:caus 9s ease-in-out infinite alternate;
+  opacity:calc(1 - var(--depth) * 2);
+}
+@keyframes caus{to{transform:translate(4%,2%) scale(1.1)}}
+#bubbles{position:fixed;inset:0;z-index:-3;pointer-events:none}
+#sea-life{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+
+/* Peces */
+.fish{position:absolute;left:0;will-change:transform;animation:swim linear forwards}
+.fish .wiggle{animation:wiggle 1.6s ease-in-out infinite}
+.fish.rev svg{transform:scaleX(-1)}
+@keyframes swim{from{transform:translateX(-15vw)}to{transform:translateX(115vw)}}
+@keyframes swimRev{from{transform:translateX(115vw)}to{transform:translateX(-15vw)}}
+@keyframes wiggle{50%{transform:translateY(14px) rotate(2deg)}}
+
+/* Medusas */
+.jelly{position:absolute;animation:jellyRise linear forwards;opacity:.75;filter:drop-shadow(0 0 14px rgba(255,140,220,.55))}
+.jelly .bell{animation:pulse 2.4s ease-in-out infinite;transform-origin:50% 30%}
+.jelly .tent{animation:tent 2.4s ease-in-out infinite;transform-origin:50% 0}
+@keyframes jellyRise{from{transform:translateY(110vh)}to{transform:translateY(-40vh)}}
+@keyframes pulse{50%{transform:scale(1.08,.88)}}
+@keyframes tent{50%{transform:scaleY(1.12) skewX(4deg)}}
+
+/* =========================================================
+   PANTALLA DE INICIO
+   ========================================================= */
+#splash{
+  position:fixed;inset:0;z-index:100;display:grid;place-items:center;text-align:center;
+  background:radial-gradient(circle at 50% 40%,#0c4a73,#021226 70%);
+  transition:opacity 1.2s ease,visibility 1.2s;
+}
+#splash.gone{opacity:0;visibility:hidden}
+#splash .logo{width:min(260px,60vw);margin:0 auto 1.2rem;animation:float 4s ease-in-out infinite}
+#splash h1{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2.4rem,7vw,4.5rem);letter-spacing:.02em}
+#splash h1 em{font-style:italic;color:var(--coral)}
+#splash p{font-family:'Caveat',cursive;font-size:1.6rem;color:var(--ink-soft);margin:.3rem 0 2rem}
+.dive-btn{
+  padding:1rem 2.4rem;border-radius:999px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem;
+  background:linear-gradient(135deg,var(--aqua),#3aa7e0);color:#02233a;
+  box-shadow:0 0 0 0 rgba(94,231,223,.6);animation:ping 2s infinite;
+}
+@keyframes ping{70%{box-shadow:0 0 0 22px rgba(94,231,223,0)}100%{box-shadow:0 0 0 0 rgba(94,231,223,0)}}
+@keyframes float{50%{transform:translateY(-12px)}}
+
+/* =========================================================
+   CABECERA Y MEDIDOR DE PROFUNDIDAD
+   ========================================================= */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem clamp(1rem,4vw,2.5rem);
+  background:linear-gradient(to bottom,rgba(2,18,38,.55),transparent);transition:background .4s,backdrop-filter .4s;
+}
+.topbar.scrolled{background:rgba(2,18,38,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(255,255,255,.08)}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--ink)}
+.brand svg{width:54px}
+.brand span{font-family:'Caveat',cursive;font-size:1.5rem}
+.topbar nav{display:flex;gap:1.4rem}
+.topbar nav a{color:var(--ink-soft);text-decoration:none;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:color .3s}
+.topbar nav a:hover{color:var(--aqua)}
+@media(max-width:720px){.topbar nav{display:none}}
+
+#depth{
+  position:fixed;right:clamp(.6rem,2vw,1.6rem);top:50%;transform:translateY(-50%);z-index:40;
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;font-size:.7rem;letter-spacing:.12em;color:var(--ink-soft)
+}
+#depth .track{width:3px;height:30vh;background:rgba(255,255,255,.15);border-radius:3px;position:relative}
+#depth .fill{position:absolute;top:0;left:0;right:0;background:linear-gradient(var(--aqua),var(--pink));border-radius:3px;height:0}
+#depth .m{font-weight:600;color:var(--aqua)}
+@media(max-width:720px){#depth{display:none}}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero{
+  min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:3rem;
+  padding:7rem clamp(1.2rem,6vw,6rem) 4rem;max-width:1300px;margin:0 auto;
+}
+.eyebrow{font-size:.8rem;letter-spacing:.35em;text-transform:uppercase;color:var(--aqua)}
+.hero h1{
+  font-family:'Fraunces',serif;font-weight:300;line-height:.95;
+  font-size:clamp(3.4rem,10vw,8rem);margin:.8rem 0 .4rem;
+}
+.hero h1 .amp{font-style:italic;color:var(--coral);font-weight:300}
+.hero .sub{font-family:'Caveat',cursive;font-size:clamp(1.8rem,4vw,2.6rem);color:var(--sand)}
+.counter{display:flex;gap:clamp(.6rem,2vw,1.2rem);margin:2.2rem 0 1rem;flex-wrap:wrap}
+.counter div{
+  min-width:86px;padding:1rem .8rem;border-radius:18px;text-align:center;
+  background:var(--glass);border:1px solid var(--glass-brd);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)
+}
+.counter b{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:2rem;line-height:1}
+.counter small{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+.counter-label{color:var(--ink-soft);font-size:.95rem}
+.porthole{
+  position:relative;aspect-ratio:1;width:min(100%,460px);justify-self:center;border-radius:50%;
+  padding:18px;background:conic-gradient(from 30deg,#c9a46a,#f6e2b3,#8f6b35,#f6e2b3,#c9a46a);
+  box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 4px rgba(0,0,0,.25);
+}
+.porthole::before{ /* tornillos */
+  content:"";position:absolute;inset:6px;border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 2.5%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 50% 97.5%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 2.5% 50%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 97.5% 50%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 15% 15%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 85% 15%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 15% 85%,#5b4220 3px,transparent 4px),
+    radial-gradient(circle at 85% 85%,#5b4220 3px,transparent 4px);
+}
+.porthole img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative}
+.porthole::after{ /* reflejo del cristal */
+  content:"";position:absolute;inset:18px;border-radius:50%;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 35%,transparent 70%,rgba(94,231,223,.2));
+  box-shadow:inset 0 0 40px rgba(2,18,38,.6);
+}
+.scroll-cue{
+  position:absolute;left:50%;bottom:1.5rem;transform:translateX(-50%);text-align:center;
+  font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft);animation:float 2.5s infinite
+}
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;text-align:center;padding-top:6rem}
+  .counter{justify-content:center}
+  .porthole{width:min(80vw,380px);order:-1}
+}
+
+/* =========================================================
+   CAPÍTULOS (LÍNEA DEL TIEMPO)
+   ========================================================= */
+section{position:relative}
+.section-title{text-align:center;padding:6rem 1.2rem 2rem}
+.section-title h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2.4rem,6vw,4.2rem)}
+.section-title h2 em{color:var(--coral)}
+.section-title p{color:var(--ink-soft);max-width:560px;margin:.6rem auto 0}
+
+.timeline{max-width:1200px;margin:0 auto;padding:2rem clamp(1rem,4vw,3rem) 4rem;position:relative}
+.timeline::before{ /* cuerda de burbujas */
+  content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.35) 0 6px,transparent 6px 18px);
+}
+.chapter{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,6rem);align-items:center;
+  margin:0 0 clamp(5rem,12vw,9rem);position:relative;
+}
+.chapter::before{ /* marcador */
+  content:"";position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#fff,var(--aqua) 40%,#1a7fa8);box-shadow:0 0 22px var(--aqua);
+}
+.chapter:nth-child(even) .text{order:2}
+.chapter .text{
+  padding:2rem clamp(1.4rem,3vw,2.4rem);border-radius:28px;
+  background:var(--glass);border:1px solid var(--glass-brd);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.chapter .date{font-family:'Caveat',cursive;font-size:1.6rem;color:var(--aqua)}
+.chapter h3{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(1.8rem,3.4vw,2.6rem);line-height:1.1;margin:.2rem 0 1rem}
+.chapter p{color:#d6e9f6;margin-bottom:.9rem}
+.chapter p:last-of-type{margin-bottom:0}
+.chapter.special .text{border-color:rgba(255,111,145,.45);box-shadow:0 0 60px rgba(255,111,145,.18)}
+.chapter.special .date{color:var(--pink)}
+
+/* Fotos de cada capítulo */
+.photos{position:relative;min-height:440px}
+.photos figure{
+  position:absolute;background:#fff;padding:10px;border-radius:6px;
+  box-shadow:0 18px 40px rgba(0,0,0,.45);cursor:zoom-in;transition:transform .5s cubic-bezier(.2,.8,.2,1),z-index 0s .25s;
+}
+.photos figure img{width:100%;height:100%;object-fit:cover;border-radius:2px}
+.photos figure:nth-child(1){width:62%;height:78%;left:4%;top:4%;transform:rotate(-4deg);z-index:2}
+.photos figure:nth-child(2){width:46%;height:52%;right:2%;top:0;transform:rotate(6deg);z-index:1}
+.photos figure:nth-child(3){width:44%;height:48%;right:6%;bottom:0;transform:rotate(-2deg);z-index:3}
+.photos figure:hover{transform:rotate(0) scale(1.06);z-index:5;transition:transform .5s cubic-bezier(.2,.8,.2,1),z-index 0s}
+
+@media(max-width:860px){
+  .timeline::before,.chapter::before{left:22px}
+  .chapter{grid-template-columns:1fr;padding-left:38px}
+  .chapter:nth-child(even) .text{order:0}
+  .chapter::before{top:2rem}
+  .photos{min-height:380px}
+}
+
+/* Elementos interactivos de los capítulos */
+.play{
+  margin-top:1.4rem;padding:1rem 1.1rem;border-radius:18px;background:rgba(2,18,38,.45);border:1px dashed rgba(255,255,255,.22);
+  display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1.2rem;font-size:.92rem
+}
+.pill{
+  padding:.55rem 1.1rem;border-radius:999px;font-weight:600;font-size:.85rem;
+  background:linear-gradient(135deg,var(--coral),var(--pink));color:#fff;transition:transform .2s;
+}
+.pill:hover{transform:translateY(-2px) scale(1.04)}
+.pill:active{transform:scale(.95)}
+.pill.alt{background:linear-gradient(135deg,#6ee7b7,#16a34a)}
+.stat b{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--sand)}
+.scan-out{font-family:'Caveat',cursive;font-size:1.35rem;color:#86efac;min-height:1.6rem;width:100%}
+.badge{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .8rem;border-radius:999px;background:rgba(255,255,255,.08);font-size:.82rem}
+
+/* Ostra */
+.oyster-wrap{display:flex;align-items:center;gap:1.2rem;width:100%}
+.oyster{width:120px;flex:none;cursor:pointer}
+.oyster .top{transform-origin:20px 62px;transition:transform 1s cubic-bezier(.3,1.4,.5,1)}
+.oyster.open .top{transform:rotate(-38deg)}
+.oyster .pearl{opacity:0;transition:opacity .6s .5s}
+.oyster.open .pearl{opacity:1;filter:drop-shadow(0 0 10px #fff)}
+.oyster-msg{font-family:'Caveat',cursive;font-size:1.4rem;color:var(--sand);opacity:.6;transition:.6s}
+.oyster.open + .oyster-msg{opacity:1;color:#fff}
+
+/* Distancia */
+.distance{width:100%;height:60px;position:relative}
+.distance svg{width:100%;height:100%;overflow:visible}
+.distance .line{stroke-dasharray:6 8;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-28}}
+
+/* Corazones que salen */
+.heart-pop{position:fixed;pointer-events:none;z-index:90;font-size:1.6rem;animation:heartUp 1.6s ease-out forwards}
+@keyframes heartUp{to{transform:translate(var(--dx),-180px) scale(1.4) rotate(var(--r));opacity:0}}
+
+/* =========================================================
+   GALERÍA
+   ========================================================= */
+.gallery-open{display:flex;justify-content:center;padding:0 1rem 4rem}
+#galeria{
+  position:fixed;inset:0;z-index:110;overflow-y:auto;background:rgba(1,14,30,.94);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:.4s
+}
+#galeria.open{opacity:1;visibility:visible}
+#galeria .gal-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem clamp(1rem,4vw,3rem);background:linear-gradient(rgba(1,14,30,.98),rgba(1,14,30,0))}
+#galeria .gal-head h3{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(1.4rem,4vw,2.2rem)}
+#galeria .gal-head h3 em{color:var(--aqua)}
+#gal-close{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);transition:.2s}
+#gal-close:hover{background:var(--aqua);color:#02233a}
+body.gal-lock{overflow:hidden}
+.gallery{columns:5 190px;column-gap:14px;max-width:1300px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem) 4rem}
+.gallery .g{
+  break-inside:avoid;margin-bottom:14px;border-radius:16px;overflow:hidden;position:relative;cursor:zoom-in;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translateY(30px);opacity:0;
+  transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .8s,box-shadow .4s;
+}
+.gallery .g.in,#galeria.open .g{transform:none;opacity:1}
+.gallery .g img{width:100%;height:auto;transition:transform .8s cubic-bezier(.2,.8,.2,1),filter .5s}
+.gallery .g:hover img{transform:scale(1.07);filter:saturate(1.15)}
+.gallery .g::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,rgba(2,18,38,.45),transparent 40%);opacity:0;transition:.4s
+}
+.gallery .g:hover{box-shadow:0 0 0 2px var(--aqua),0 20px 50px rgba(0,0,0,.5)}
+.gallery .g:hover::after{opacity:1}
+.gallery .g.hide{display:none}
+
+/* Lightbox */
+#lightbox{
+  position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(1,10,22,.92);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;visibility:hidden;transition:.4s
+}
+#lightbox.open{opacity:1;visibility:visible}
+#lightbox img{max-width:92vw;max-height:84vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6);transition:opacity .25s}
+#lightbox .lb-btn{
+  position:absolute;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.5rem;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);transition:.2s
+}
+#lightbox .lb-btn:hover{background:var(--aqua);color:#02233a}
+#lb-prev{left:2vw}#lb-next{right:2vw}#lb-close{top:2vh;right:2vw}
+#lb-count{position:absolute;bottom:3vh;font-size:.85rem;letter-spacing:.2em;color:var(--ink-soft)}
+
+/* =========================================================
+   BOTELLA, CUENTA ATRÁS Y FONDO MARINO
+   ========================================================= */
+.bottle-sec{text-align:center;padding:3rem 1.2rem 2rem}
+.bottle{width:120px;margin:1.5rem auto;cursor:pointer;animation:bob 3.5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(94,231,223,.35))}
+@keyframes bob{50%{transform:translateY(-14px) rotate(8deg)}}
+.bottle-hint{font-family:'Caveat',cursive;font-size:1.4rem;color:var(--ink-soft)}
+.letter{
+  max-width:620px;margin:1.5rem auto 0;text-align:left;padding:2.6rem clamp(1.4rem,4vw,3rem);border-radius:8px;
+  background:#fbf3e4;color:#3b2f24;font-family:'Caveat',cursive;font-size:1.55rem;line-height:1.45;
+  box-shadow:0 30px 80px rgba(0,0,0,.5);transform-origin:top;
+  max-height:0;overflow:hidden;opacity:0;padding-top:0;padding-bottom:0;transition:max-height 1.2s ease,opacity .8s,padding .8s;
+  background-image:repeating-linear-gradient(transparent 0 2.2rem,rgba(120,90,60,.12) 2.2rem calc(2.2rem + 1px));
+}
+.letter.open{max-height:2000px;opacity:1;padding-top:2.6rem;padding-bottom:2.6rem}
+.letter .sign{text-align:right;margin-top:1rem;font-size:1.8rem}
+.letter .polaroid{margin:1.6rem auto .4rem;max-width:340px;background:#fff;padding:12px 12px 0;border-radius:4px;
+  box-shadow:0 14px 34px rgba(0,0,0,.25);transform:rotate(-2deg);text-align:center}
+.letter .polaroid img{width:100%;height:auto;display:block;border-radius:2px}
+.letter .polaroid figcaption{font-family:'Caveat',cursive;font-size:1.9rem;color:#c2456b;padding:.5rem 0 .7rem;line-height:1.1}
+
+.anniv{text-align:center;padding:5rem 1.2rem 3rem}
+.anniv h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2rem,5vw,3.4rem)}
+.anniv .big{display:flex;justify-content:center;gap:1rem;margin:1.6rem 0;flex-wrap:wrap}
+.anniv .big div{min-width:96px;padding:1.2rem;border-radius:20px;background:var(--glass);border:1px solid var(--glass-brd)}
+.anniv .big b{display:block;font-family:'Fraunces',serif;font-size:2.6rem;line-height:1;color:var(--pink)}
+.anniv .big small{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+.anniv .done{font-family:'Caveat',cursive;font-size:clamp(2.4rem,6vw,4rem);color:var(--pink);display:none}
+
+.seabed{position:relative;height:260px;margin-top:2rem;overflow:hidden}
+.seabed svg.sand{position:absolute;bottom:0;left:0;width:100%;height:120px}
+.weed{position:absolute;bottom:40px;transform-origin:bottom center;animation:sway ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+footer{text-align:center;padding:2rem 1rem 3rem;background:#e2c497;color:#5a4325}
+footer svg{width:90px;margin:0 auto .4rem;display:block}
+footer .names{font-family:'Fraunces',serif;font-size:1.6rem}
+footer small{font-family:'Caveat',cursive;font-size:1.3rem}
+
+/* Aparición al hacer scroll */
+.reveal{opacity:0;transform:translateY(50px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* Huevo de pascua: escribe "reptiliana" */
+body.reptil{filter:hue-rotate(70deg) saturate(1.3)}
+.toast{
+  position:fixed;left:50%;bottom:2rem;transform:translate(-50%,40px);opacity:0;z-index:130;
+  padding:.8rem 1.4rem;border-radius:999px;background:#16a34a;color:#fff;font-weight:600;transition:.5s
+}
+.toast.show{transform:translate(-50%,0);opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* =========================================================
+   RESPONSIVE (móvil, tablet, horizontal y pantallas grandes)
+   ========================================================= */
+/* Botón de menú para móvil */
+.menu-btn{
+  display:none;width:44px;height:44px;border-radius:12px;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  background:var(--glass);border:1px solid var(--glass-brd)
+}
+.menu-btn span{display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);transition:transform .3s,opacity .3s}
+.menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.menu-btn.open span:nth-child(2){opacity:0}
+.menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Alto real de pantalla en móviles (sin contar barras del navegador) */
+@supports (height:100svh){
+  .hero{min-height:100svh}
+}
+
+/* Tablet */
+@media (max-width:1024px){
+  .hero{gap:2rem}
+  .gallery{columns:4 170px}
+}
+
+/* Móvil y tablet pequeña */
+@media (max-width:720px){
+  .menu-btn{display:flex}
+  .topbar{padding:.6rem 1rem}
+  .brand svg{width:44px}
+  .brand span{font-size:1.3rem}
+  .topbar nav{
+    display:flex;position:absolute;top:calc(100% + .4rem);left:.8rem;right:.8rem;flex-direction:column;gap:0;padding:.4rem;
+    border-radius:18px;background:rgba(2,18,38,.94);border:1px solid var(--glass-brd);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 40px rgba(0,0,0,.4);
+    opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .3s,transform .3s,visibility .3s
+  }
+  .topbar nav.open{opacity:1;visibility:visible;transform:none}
+  .topbar nav a{padding:.9rem 1rem;border-radius:12px;font-size:.9rem}
+  .topbar nav a:active,.topbar nav a:hover{background:var(--glass)}
+
+  .section-title{padding:4rem 1rem 1.5rem}
+  .gallery-open{padding-bottom:3rem}
+}
+
+/* Móvil */
+@media (max-width:600px){
+  .hero{padding:5.5rem 1.1rem 3rem;gap:1.6rem}
+  .hero h1{font-size:clamp(3rem,15vw,4.4rem)}
+  .eyebrow{font-size:.7rem;letter-spacing:.25em}
+  .scroll-cue{display:none}
+
+  /* Contadores: siempre los 4 en una fila */
+  .counter,.anniv .big{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;max-width:380px;margin-left:auto;margin-right:auto}
+  .counter div,.anniv .big div{min-width:0;padding:.8rem .2rem;border-radius:14px}
+  .counter b{font-size:1.5rem}
+  .anniv .big b{font-size:1.8rem}
+  .counter small,.anniv .big small{font-size:.56rem;letter-spacing:.1em}
+  .anniv{padding:3.5rem 1rem 2.5rem}
+
+  /* Línea del tiempo */
+  .timeline{padding:1rem .8rem 3rem}
+  .timeline::before,.chapter::before{left:14px}
+  .chapter{padding-left:30px;gap:1.6rem;margin-bottom:4rem}
+  .chapter::before{width:18px;height:18px}
+  .chapter .text{padding:1.4rem 1.2rem;border-radius:22px}
+  .chapter .date{font-size:1.4rem}
+
+  /* Collage de fotos proporcionado al ancho */
+  .photos{min-height:0;aspect-ratio:1/1.05;width:100%;max-width:440px;margin:0 auto}
+  .photos figure{padding:7px 7px 30px}
+  
+  /* Juegos de los capítulos */
+  .play{padding:.9rem;gap:.7rem}
+  .oyster-wrap{flex-wrap:wrap;justify-content:center;text-align:center}
+  .oyster{width:96px}
+
+  /* Galería a pantalla completa: 2 columnas */
+  .gallery{columns:2;column-gap:10px;padding:0 10px 3rem}
+  .gallery .g{margin-bottom:10px;border-radius:12px}
+  #galeria .gal-head{padding:1rem}
+  #gal-close{width:44px;height:44px}
+
+  /* Visor de fotos: flechas abajo para no tapar la foto */
+  #lightbox img{max-width:94vw;max-height:72vh}
+  #lightbox .lb-btn{width:48px;height:48px}
+  #lb-prev,#lb-next{top:auto;bottom:2.5vh}
+  #lb-prev{left:6vw}#lb-next{right:6vw}
+  #lb-close{top:1.5vh;right:3vw}
+  #lb-count{bottom:4vh}
+
+  /* Carta */
+  .letter{font-size:1.35rem;line-height:1.4;padding-left:1.2rem;padding-right:1.2rem}
+  .letter.open{padding-top:1.8rem;padding-bottom:1.8rem}
+  .letter .sign{font-size:1.6rem}
+  .letter .polaroid{max-width:100%;padding:8px 8px 0}
+  .letter .polaroid figcaption{font-size:1.6rem}
+
+  .dive-btn{padding:.9rem 1.8rem;font-size:.8rem}
+  #splash p{font-size:1.35rem;padding:0 1rem}
+  .seabed{height:180px}
+}
+
+/* Móviles muy estrechos */
+@media (max-width:360px){
+  .brand span{display:none}
+  .counter b{font-size:1.25rem}
+  .anniv .big b{font-size:1.5rem}
+  .counter small,.anniv .big small{font-size:.5rem;letter-spacing:.05em}
+  .chapter{padding-left:24px}
+  .timeline::before,.chapter::before{left:10px}
+}
+
+/* Móvil en horizontal (poca altura) */
+@media (max-height:520px) and (orientation:landscape){
+  #splash .logo{width:min(150px,28vh);margin-bottom:.4rem}
+  #splash h1{font-size:clamp(1.8rem,6vh,2.6rem)}
+  #splash p{margin:.2rem 0 1rem}
+  .hero{min-height:auto;padding-top:5rem;grid-template-columns:1fr 1fr;text-align:left}
+  .hero .porthole{order:0;width:min(42vw,300px)}
+  .hero h1{font-size:clamp(2.4rem,11vh,3.8rem)}
+  .hero .sub{font-size:clamp(1.3rem,6vh,1.8rem)}
+  .counter{margin:1rem 0 .5rem}
+  .counter{justify-content:flex-start}
+  .scroll-cue{display:none}
+  #lightbox img{max-height:80vh}
+}
+
+/* Pantallas grandes */
+@media (min-width:1600px){
+  .hero,.timeline{max-width:1440px}
+  .gallery{max-width:1500px;columns:6 200px}
+}
+
+/* En pantallas táctiles el "hover" de las fotos no se queda pegado */
+@media (hover:none){
+  .photos figure:hover{transform:none}
+  .photos figure:nth-child(1):hover{transform:rotate(-4deg)}
+  .photos figure:nth-child(2):hover{transform:rotate(6deg)}
+  .photos figure:nth-child(3):hover{transform:rotate(-2deg)}
+  .gallery .g:hover img{transform:none}
+}
+</style>
+  </head>
+
+  <body class="locked">
+
+    <!-- =========================================================
+     LOGO "DE LA MANITA" (se reutiliza en varios sitios)
+     ========================================================= -->
+    <svg width="0" height="0" style="position:absolute">
+      <symbol id="manita" viewBox="0 30 200 120">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <!-- mano de Diego -->
+          <path d="M196 120 L128 104" stroke="#0b2a47" stroke-width="40" />
+          <path d="M196 120 L128 104" stroke="#f6dcc0" stroke-width="32" />
+          <path d="M132 104 L108 100" stroke="#0b2a47" stroke-width="44" />
+          <path d="M132 104 L108 100" stroke="#f6dcc0" stroke-width="36" />
+          <!-- mano de Elsa -->
+          <path d="M4 120 L72 104" stroke="#0b2a47" stroke-width="40" />
+          <path d="M4 120 L72 104" stroke="#ff9a8b" stroke-width="32" />
+          <path d="M68 104 L96 98" stroke="#0b2a47" stroke-width="44" />
+          <path d="M68 104 L96 98" stroke="#ff9a8b" stroke-width="36" />
+          <!-- dedos entrelazados -->
+          <path d="M96 82 Q120 78 128 90" stroke="#0b2a47"
+            stroke-width="16" /><path d="M96 82 Q120 78 128 90" stroke="#ff9a8b"
+            stroke-width="10" />
+          <path d="M98 94 Q124 92 130 104" stroke="#0b2a47"
+            stroke-width="16" /><path d="M98 94 Q124 92 130 104"
+            stroke="#ff9a8b" stroke-width="10" />
+          <path d="M98 106 Q122 106 126 117" stroke="#0b2a47"
+            stroke-width="16" /><path d="M98 106 Q122 106 126 117"
+            stroke="#ff9a8b" stroke-width="10" />
+          <path d="M122 124 Q100 130 84 120" stroke="#0b2a47"
+            stroke-width="16" /><path d="M122 124 Q100 130 84 120"
+            stroke="#f6dcc0" stroke-width="10" />
+          <!-- corazón -->
+          <path
+            d="M100 52 C 92 44, 80 50, 86 60 L100 72 L114 60 C 120 50, 108 44, 100 52 Z"
+            fill="#ff6f91" stroke="none" />
+        </g>
+      </symbol>
+    </svg>
+
+    <!-- Capas del acuario -->
+    <div id="ocean"></div>
+    <div class="rays"></div>
+    <div class="caustics"></div>
+    <canvas id="bubbles"></canvas>
+    <div id="sea-life"></div>
+
+    <!-- =========================================================
+     PANTALLA DE INICIO
+     ========================================================= -->
+    <div id="splash">
+      <div>
+        <svg class="logo" viewBox="0 0 200 120"><use href="#manita" width="200"
+            height="120" /></svg>
+        <h1>Diego <em>&amp;</em> Elsa</h1>
+        <p>dos años de la manita</p>
+        <button class="dive-btn" id="dive">Pulsa aqui</button>
+      </div>
+    </div>
+
+    <!-- Cabecera -->
+    <header class="topbar">
+      <a class="brand" href="#inicio"><svg viewBox="0 0 200 120"><use
+            href="#manita" width="200" height="120" /></svg><span>de la
+          manita</span></a>
+      <button class="menu-btn" id="menu-btn" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav id="menu">
+        <a href="#historia">Nuestra historia</a>
+        <a href="#recuerdos">Recuerdos</a>
+        <a href="#botella">Mensaje</a>
+        <a href="#aniversario">30 · 11</a>
+      </nav>
+    </header>
+
+    <div id="depth"><span>Profundidad</span><div class="track"><div
+          class="fill"></div></div><span class="m" id="depth-m">0 m</span></div>
+
+    <main>
+      <!-- =========================================================
+     HERO
+     ========================================================= -->
+      <section class="hero" id="inicio">
+        <div>
+          <div class="eyebrow">30 · 11 · 2024 — 30 · 11 · 2026</div>
+          <h1>Diego <span class="amp">&amp;</span><br>Elsa</h1>
+          <div class="sub">Dos años de la manita</div>
+          <div class="counter" id="together">
+            <div><b data-k="d">0</b><small>días</small></div>
+            <div><b data-k="h">0</b><small>horas</small></div>
+            <div><b data-k="m">0</b><small>min</small></div>
+            <div><b data-k="s">0</b><small>seg</small></div>
+          </div>
+          <div class="counter-label">desde que empezamos a salir (y
+            sumando)</div>
+        </div>
+        <div class="porthole"><img src="fotos/foto-35.jpg"
+            alt="Diego y Elsa frente al mar al atardecer" data-lb="35"></div>
+        <div class="scroll-cue">Baja ↓ <br>a nuestra historia</div>
+      </section>
+
+      <!-- =========================================================
+     NUESTRA HISTORIA
+     ========================================================= -->
+      <div class="section-title reveal" id="historia">
+        <div class="eyebrow">Desde el principio</div>
+        <h2>Nuestra <em>historia</em></h2>
+        <p>Baja y lo vas viendo todo.</p>
+      </div>
+
+      <div class="timeline">
+
+        <!-- 1 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">Septiembre 2023 · 1º de Bachiller</div>
+            <h3>La de al lado</h3>
+            <p>Todo empezó en clase. Te sentabas a mi lado y la verdad es que me
+              fijé en ti porque eras guapa, aunque en esa época yo pasaba
+              bastante de las chicas.</p>
+            <p>Pero en clase me aburría muchísimo y a mí como sabes siempre me ha gustado
+              hacer el tonto, así que te tocó aguantarme poniendo la oreja. Que si eras
+              reptiliana, que si te quitaba pelos para la
+              pócima y mira cómo ha
+              acabado esto.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="9"><img src="fotos/mini/foto-09.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="58"><img src="fotos/mini/foto-58.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="62"><img src="fotos/mini/foto-62.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 2 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">El día de Navarrete</div>
+            <h3>La primera quedada (y Roel)</h3>
+            <p>Un día que tenía entreno en Navarrete y venía de cortarme el
+              pelo, quedamos para hablar y te pedi unos calcetines porque no tenia.</p>
+            <p>Vino también Roel, que ese día tenía una cagalera del copon,
+              aquello fue una explosión literal y a ti te dio mucha verguenza. A partir de ahí empezamos a
+              hablar todos los días, primero era solo por los deberes pero luego acabamos hablando de todo
+              y la verdad es que encajamos muy bien.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="11"><img src="fotos/mini/foto-11.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="3"><img src="fotos/mini/foto-03.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="64"><img src="fotos/mini/foto-64.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 3 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">Verano 2024</div>
+            <h3>El verano de la piscina</h3>
+            <p>Ese verano seguimos quedando y yo me iba a tu piscina casi
+              siempre.</p>
+            <p>Cada vez me lo pasaba mejor contigo y ya se notaba que aquello no
+              era solo de amigos. Entre atardeceres y partidas al uno empezamos a sentir cosas más fuertes</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="5"><img src="fotos/mini/foto-05.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="30"><img src="fotos/mini/foto-30.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="37"><img src="fotos/mini/foto-37.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 4 -->
+        <article class="chapter special reveal">
+          <div class="text">
+            <div class="date">4 de julio de 2024</div>
+            <h3>El primer beso</h3>
+            <p>El 4 de julio nos dimos el primer beso. Ahí empezó todo de
+              verdad.</p>
+            <p>Desde ese día me empecé a ablandar contigo. Como ya sabes siempre me ha costado eso
+              y más con alguien con la que llevaba tan poco tiempo de "amistad".
+            </p>
+          </div>
+          <div class="photos">
+            <figure data-lb="34"><img src="fotos/mini/foto-34.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="32"><img src="fotos/mini/foto-32.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="33"><img src="fotos/mini/foto-33.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 5 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">Poco a poco</div>
+            <h3>Me ablandaste</h3>
+            <p>Ya sabes que yo siempre he sido duro con los sentimientos, porque
+              me han criado así y me costaba mucho mostrar lo que sentía.</p>
+            <p>Tú lo has cambiado. Me has enseñado a querer y a dejar que me
+              quieran, y eso no lo había hecho nadie.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="13"><img src="fotos/mini/foto-13.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="12"><img src="fotos/mini/foto-12.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="19"><img src="fotos/mini/foto-19.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 6 -->
+        <article class="chapter special reveal">
+          <div class="text">
+            <div class="date">30 de noviembre de 2024</div>
+            <h3>Novios</h3>
+            <p>Me lo pensé muchísimo, demasiado, lo sé, pero el 30 de noviembre
+              de 2024 por fin empezamos a salir.</p>
+            <p>Fue un poco a nuestra manera, raro, pero es que somos así y por
+              eso somos tan nosotros.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="26"><img src="fotos/mini/foto-26.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="25"><img src="fotos/mini/foto-25.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="17"><img src="fotos/mini/foto-17.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 7 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">El día que lo supimos</div>
+            <h3>Cuando nos enamoramos de verdad</h3>
+            <p>Para mí el momento en el que nos enamoramos de verdad fue cuando
+              me contaste que tu madre estaba embarazada y no sabías cómo
+              tomártelo.</p>
+            <p>Yo, que era el duro, me quedé escuchándote y entendiéndote de
+              verdad. Nunca me había puesto tanto en el lugar de nadie y eso tambien lo habias conseguido tu .Creo que ahí los dos nos dimos cuenta.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="16"><img src="fotos/mini/foto-16.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="65"><img src="fotos/mini/foto-65.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="29"><img src="fotos/mini/foto-29.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 8 -->
+        <article class="chapter reveal">
+          <div class="text">
+            <div class="date">A distancia</div>
+            <h3>Lejos pero de la manita</h3>
+            <p>Luego vino la distancia y han pasado muchas cosas. Ha habido
+              momentos fáciles y otros que no tanto.</p>
+            <p>Pero aquí seguimos, juntos y de la manita.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="47"><img src="fotos/mini/foto-47.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="66"><img src="fotos/mini/foto-66.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="49"><img src="fotos/mini/foto-49.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+
+        <!-- 9 -->
+        <article class="chapter special reveal">
+          <div class="text">
+            <div class="date">30 de noviembre de 2026</div>
+            <h3>Dos años</h3>
+            <p>Dos años ya. De reírnos, de hacer el tonto, de
+              atardeceres, y de mil cosas más. Ahora cada uno forma parte del otro</p>
+            <p>Y lo que nos queda.</p>
+          </div>
+          <div class="photos">
+            <figure data-lb="6"><img src="fotos/mini/foto-06.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="36"><img src="fotos/mini/foto-36.jpg" alt
+                loading="lazy"></figure>
+            <figure data-lb="61"><img src="fotos/mini/foto-61.jpg" alt
+                loading="lazy"></figure>
+          </div>
+        </article>
+      </div>
+
+      <!-- =========================================================
+     GALERÍA
+     ========================================================= -->
+      <div class="section-title reveal" id="recuerdos">
+        <div class="eyebrow">40 fotos</div>
+        <h2>Nuestras <em>fotos</em></h2>
+        <p>Pulsa el botón para verlas todas.(pd: No sabes la de horas que he estado haciendo esto con cara de tonto)</p>
+      </div>
+      <div class="gallery-open">
+        <button class="dive-btn" id="open-gallery">Nosotros</button>
+      </div>
+      <div id="galeria" aria-hidden="true">
+        <div class="gal-head">
+          <h3>Nuestras <em>fotos</em></h3>
+          <button id="gal-close" aria-label="Cerrar galería">✕</button>
+        </div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+
+      <!-- =========================================================
+     MENSAJE EN UNA BOTELLA
+     ========================================================= -->
+      <section class="bottle-sec" id="botella">
+        <div class="section-title reveal" style="padding-bottom:0">
+          <div class="eyebrow">Ha llegado algo</div>
+          <h2>Un mensaje en una <em>botella</em></h2>
+        </div>
+        <svg class="bottle" id="bottle" viewBox="0 0 80 160"
+          aria-label="Botella, haz clic para abrirla">
+          <rect x="30" y="4" width="20" height="16" rx="3" fill="#a9744a" />
+          <path
+            d="M32 20 h16 v22 q22 12 22 40 v58 q0 14 -14 14 h-32 q-14 0 -14 -14 v-58 q0 -28 22 -40z"
+            fill="rgba(150,235,225,.28)" stroke="rgba(220,255,250,.7)"
+            stroke-width="2" />
+          <rect x="22" y="70" width="36" height="56" rx="4" fill="#fbf3e4"
+            transform="rotate(-6 40 98)" />
+          <path d="M28 82 h22 M28 92 h24 M28 102 h18" stroke="#c9b28f"
+            stroke-width="2" transform="rotate(-6 40 98)" />
+          <path d="M18 70 q4 -10 10 -14" stroke="#fff" stroke-width="3"
+            opacity=".6" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="bottle-hint" id="bottle-hint">Toca la botella para
+          abrirla</div>
+
+        <!-- ✏️ Diego: aquí puedes cambiar el texto de la carta a tu gusto -->
+        <div class="letter" id="letter">
+          <p>Gracias por aguantar todas mis cosas desde el primer día en
+            clase y por haberme ablandado, que no era fácil.</p>
+          <p>Me has cambiado desde la forma del pelo hasta la forma de vestir pasando porque me has enseñado a querer y 
+            a dejarme querer y te estare agradecido siempre por eso
+          </p>
+          <p>Han sido dos años con momentos muy buenos y 
+            siempre juntos. Y espero que sean muchos más.</p>
+          <p>Feliz aniversario. Te quiero mucho.</p>
+          <p class="sign">Diego</p>
+          <figure class="polaroid">
+            <img src="fotos/nosotros-uniformes.jpg"
+              alt="Diego de la USECIC y Elsa bióloga marina">
+            <figcaption>Por muchos años más 💙</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- =========================================================
+     CUENTA ATRÁS
+     ========================================================= -->
+      <section class="anniv reveal" id="aniversario">
+        <div class="eyebrow">30 de noviembre de 2026</div>
+        <h2>Nuestro segundo aniversario</h2>
+        <div class="big" id="countdown">
+          <div><b data-k="d">0</b><small>días</small></div>
+          <div><b data-k="h">0</b><small>horas</small></div>
+          <div><b data-k="m">0</b><small>min</small></div>
+          <div><b data-k="s">0</b><small>seg</small></div>
+        </div>
+        <div class="done" id="anniv-done">¡Feliz aniversario, Elsa! 💗</div>
+      </section>
+
+      <!-- Fondo marino -->
+      <div class="seabed" id="seabed">
+        <svg class="sand" viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path d="M0 50 Q180 10 360 40 T720 36 T1080 44 T1440 30 V120 H0Z"
+            fill="#e2c497" />
+          <path d="M0 70 Q240 40 480 66 T960 60 T1440 58 V120 H0Z"
+            fill="#d6b582" opacity=".7" />
+        </svg>
+      </div>
+    </main>
+
+    <footer>
+      <svg viewBox="0 0 200 120"><use href="#manita" width="200"
+          height="120" /></svg>
+      <div class="names">Diego &amp; Elsa</div>
+      <small>de la manita desde el 30 · 11 · 2024</small>
+    </footer>
+
+    <!-- Lightbox -->
+    <div id="lightbox" aria-hidden="true">
+      <button class="lb-btn" id="lb-close" aria-label="Cerrar">✕</button>
+      <button class="lb-btn" id="lb-prev" aria-label="Anterior">‹</button>
+      <img id="lb-img" alt>
+      <button class="lb-btn" id="lb-next" aria-label="Siguiente">›</button>
+      <div id="lb-count"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <!-- Música de fondo: True Love (Saske). Sin reproductor visible. -->
+    <!-- Si pones un archivo "cancion.mp3" en esta carpeta, se usa ese; si no, suena desde YouTube. -->
+    <audio id="musica" src="cancion.mp3" loop preload="auto"></audio>
+    <div id="yt"
+      style="position:fixed;width:1px;height:1px;left:-9999px;top:0;opacity:0;pointer-events:none"></div>
+
+    <script>
+/* =========================================================
+   DATOS: fotos y categorías de la galería
+   ========================================================= */
+const TOTAL = 71;
+// Fotos repetidas o muy parecidas a otra: no salen en la galería
+const REPES = [8,19,21,23,24,26,27,28,30,31,32,33,36,40,42,43,45,46,47,48,52,54,55,56,57,60,61,63,69,70,71];
+const FOTOS = Array.from({length:TOTAL},(_,i)=>i+1).filter(n=>!REPES.includes(n));
+const pad = n => String(n).padStart(2,'0');
+const big = n => `fotos/foto-${pad(n)}.jpg`;
+const mini = n => `fotos/mini/foto-${pad(n)}.jpg`;
+
+/* =========================================================
+   INICIO: botón "Sumérgete"
+   ========================================================= */
+document.getElementById('dive').addEventListener('click', e => {
+  startMusic();
+  document.getElementById('splash').classList.add('gone');
+  document.body.classList.remove('locked');
+  burst(e.clientX, e.clientY, 30);
+});
+
+
+/* =========================================================
+   MÚSICA: True Love - Saske
+   El navegador no deja que suene nada hasta que el usuario hace clic,
+   así que empieza justo al pulsar "Sumérgete".
+   ========================================================= */
+const YT_ID='hS_Csan5EIg';
+let ytPlayer=null, ytReady=false, wantYT=false, musicStarted=false;
+// Carga la API de YouTube en segundo plano
+(function(){const t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';document.head.appendChild(t);})();
+window.onYouTubeIframeAPIReady=function(){
+  ytPlayer=new YT.Player('yt',{width:1,height:1,videoId:YT_ID,
+    playerVars:{autoplay:0,controls:0,loop:1,playlist:YT_ID,playsinline:1,origin:location.origin},
+    events:{onReady:()=>{ytReady=true; if(wantYT) playYT();}}});
+};
+function playYT(){ try{ ytPlayer.unMute(); ytPlayer.setVolume(70); ytPlayer.playVideo(); }catch(e){} }
+function startMusic(){
+  if(musicStarted) return; musicStarted=true;
+  const a=document.getElementById('musica'); a.volume=.7;
+  a.play().catch(()=>{ wantYT=true; if(ytReady) playYT(); });
+}
+// Por si alguien entra sin pulsar el botón: el primer clic o tecla también la arranca
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,startMusic,{once:true}));
+
+/* =========================================================
+   COLOR DEL MAR SEGÚN LA PROFUNDIDAD
+   ========================================================= */
+const ocean = document.getElementById('ocean');
+const depthFill = document.querySelector('#depth .fill');
+const depthM = document.getElementById('depth-m');
+const lerp = (a,b,t) => a + (b-a)*t;
+const stops = [ // superficie → abismo
+  [0,   [42,170,210], [12,90,140]],
+  [.35, [14,96,150],  [6,52,98]],
+  [.7,  [6,44,88],    [3,22,52]],
+  [1,   [3,16,40],    [1,6,18]]
+];
+function seaColor(t){
+  for(let i=0;i<stops.length-1;i++){
+    const [a,c1,c2]=stops[i],[b,d1,d2]=stops[i+1];
+    if(t<=b){const k=(t-a)/(b-a);
+      return [c1.map((v,j)=>Math.round(lerp(v,d1[j],k))), c2.map((v,j)=>Math.round(lerp(v,d2[j],k)))];}
+  }
+  return [stops[3][1],stops[3][2]];
+}
+function onScroll(){
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const t = Math.min(1, Math.max(0, scrollY / (max||1)));
+  const [top,bot] = seaColor(t);
+  ocean.style.background = `linear-gradient(to bottom, rgb(${top}), rgb(${bot}))`;
+  document.documentElement.style.setProperty('--depth', t.toFixed(3));
+  depthFill.style.height = (t*100)+'%';
+  depthM.textContent = `${Math.round(t*730)} m`; // 730 días ≈ 2 años 💗
+  document.querySelector('.topbar').classList.toggle('scrolled', scrollY>40);
+}
+addEventListener('scroll', onScroll, {passive:true});
+addEventListener('resize', onScroll);
+onScroll();
+
+/* =========================================================
+   BURBUJAS Y PARTÍCULAS (canvas)
+   ========================================================= */
+const cv = document.getElementById('bubbles'), ctx = cv.getContext('2d');
+let W,H,bubbles=[],snow=[];
+function size(){W=cv.width=innerWidth*devicePixelRatio;H=cv.height=innerHeight*devicePixelRatio;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px'}
+size(); addEventListener('resize',size);
+const R = devicePixelRatio;
+function newBubble(x,y,big){
+  return {x:x??Math.random()*W, y:y??H+Math.random()*H, r:(big?4+Math.random()*10:1.5+Math.random()*5)*R,
+          v:(.4+Math.random()*1.2)*R, w:Math.random()*Math.PI*2, ws:.01+Math.random()*.03};
+}
+for(let i=0;i<70;i++) bubbles.push(newBubble());
+for(let i=0;i<90;i++) snow.push({x:Math.random()*W,y:Math.random()*H,r:(.5+Math.random()*1.6)*R,v:(.1+Math.random()*.3)*R,a:Math.random()});
+function burst(x,y,n=14){ for(let i=0;i<n;i++){ bubbles.push(newBubble(x*R+(Math.random()-.5)*40*R, y*R+(Math.random()-.5)*20*R, true)); } }
+addEventListener('click', e => { if(!e.target.closest('button,figure,.g,#lightbox,svg')) burst(e.clientX,e.clientY,8); });
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const depth = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--depth'))||0;
+  // nieve marina (más brillante cuanto más hondo)
+  for(const p of snow){
+    p.y+=p.v; p.x+=Math.sin(p.y/50)*.2; if(p.y>H){p.y=-5;p.x=Math.random()*W}
+    ctx.fillStyle=`rgba(${depth>.5?'170,255,240':'255,255,255'},${(.15+depth*.45)*p.a})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();
+  }
+  // burbujas
+  for(let i=bubbles.length-1;i>=0;i--){
+    const b=bubbles[i]; b.y-=b.v; b.w+=b.ws; b.x+=Math.sin(b.w)*.6*R;
+    if(b.y<-30){ if(bubbles.length>90) bubbles.splice(i,1); else Object.assign(b,newBubble(undefined,H+20)); continue; }
+    const g=ctx.createRadialGradient(b.x-b.r*.3,b.y-b.r*.3,b.r*.1,b.x,b.y,b.r);
+    g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.7,'rgba(200,240,255,.08)');g.addColorStop(1,'rgba(255,255,255,.35)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* =========================================================
+   PECES Y MEDUSAS
+   ========================================================= */
+const life = document.getElementById('sea-life');
+const fishColors = [['#ffb86b','#ff7a59'],['#5ee7df','#2b9ed8'],['#ffd166','#f4a261'],['#ff8fab','#ff5d8f'],['#b8f2e6','#5ec2b7'],['#c3aef5','#8b6fe0']];
+function fishSVG([a,b],id){
+  return `<svg width="70" height="40" viewBox="0 0 70 40"><defs><linearGradient id="fg${id}" x1="0" x2="1"><stop offset="0" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></linearGradient></defs>
+  <path d="M4 20 L-2 6 Q6 14 14 20 Q6 26 -2 34Z" fill="${b}" transform="translate(4 0)"/>
+  <ellipse cx="38" cy="20" rx="26" ry="13" fill="url(#fg${id})"/>
+  <path d="M30 8 Q38 -2 46 8" fill="${b}"/>
+  <path d="M28 12 Q32 20 28 28" stroke="rgba(255,255,255,.5)" stroke-width="2" fill="none"/>
+  <circle cx="54" cy="17" r="3.2" fill="#fff"/><circle cx="55" cy="17" r="1.8" fill="#02233a"/></svg>`;
+}
+let fid=0;
+function spawnFish(){
+  const school = Math.random()<.35 ? 3+Math.floor(Math.random()*4) : 1;
+  const rev = Math.random()<.5, top = 10+Math.random()*75, dur = 18+Math.random()*16;
+  const col = fishColors[Math.floor(Math.random()*fishColors.length)], scale = .5+Math.random()*.9;
+  for(let i=0;i<school;i++){
+    const f=document.createElement('div');
+    f.className='fish'+(rev?' rev':'');
+    f.style.top=`calc(${top}vh + ${(i%3)*26 - 20}px)`;
+    f.style.animationDuration=dur+'s';
+    f.style.animationDelay=(i*.6)+'s';
+    f.style.animationName=rev?'swimRev':'swim';
+    f.innerHTML=`<div class="wiggle" style="animation-delay:${Math.random()}s;transform:scale(${scale*(i?0.75:1)})">${fishSVG(col,fid++)}</div>`;
+    life.appendChild(f);
+    setTimeout(()=>f.remove(),(dur+i)*1000+500);
+  }
+}
+function spawnJelly(){
+  const j=document.createElement('div'); j.className='jelly';
+  const s=.6+Math.random()*.8, dur=30+Math.random()*20;
+  j.style.left=(5+Math.random()*85)+'vw'; j.style.animationDuration=dur+'s';
+  const hue=['#ffb3e6','#c7b3ff','#9be7ff'][Math.floor(Math.random()*3)];
+  j.innerHTML=`<svg width="${70*s}" height="${130*s}" viewBox="0 0 70 130">
+    <g class="tent" fill="none" stroke="${hue}" stroke-width="2" opacity=".7" stroke-linecap="round">
+      <path d="M18 40 q-6 20 4 40 t-2 40"/><path d="M30 42 q6 22 -2 44 t4 36"/><path d="M42 42 q-6 22 2 44 t-4 36"/><path d="M54 40 q6 20 -4 40 t2 40"/></g>
+    <path class="bell" d="M4 40 Q4 4 35 4 Q66 4 66 40 Q58 36 50 42 Q42 36 35 42 Q28 36 20 42 Q12 36 4 40Z" fill="${hue}" opacity=".55"/></svg>`;
+  life.appendChild(j); setTimeout(()=>j.remove(),dur*1000);
+}
+setInterval(spawnFish, 3500); spawnFish(); setTimeout(spawnFish,1200);
+setInterval(spawnJelly, 9000); spawnJelly();
+
+/* Algas del fondo */
+const seabed=document.getElementById('seabed');
+for(let i=0;i<22;i++){
+  const w=document.createElement('div'); w.className='weed';
+  const h=60+Math.random()*140, c=['#2f9e6e','#43c08a','#1f7a55','#e76f8a'][Math.floor(Math.random()*4)];
+  w.style.left=(Math.random()*100)+'%'; w.style.animationDuration=(2.5+Math.random()*3)+'s'; w.style.animationDelay=(-Math.random()*3)+'s';
+  w.innerHTML=`<svg width="30" height="${h}" viewBox="0 0 30 ${h}"><path d="M15 ${h} Q0 ${h*.75} 15 ${h*.5} T15 0" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/></svg>`;
+  seabed.appendChild(w);
+}
+
+/* =========================================================
+   CONTADORES
+   ========================================================= */
+const START = new Date(2024,10,30,0,0,0);   // 30 nov 2024
+const KISS  = new Date(2024,6,4);           // 4 jul 2024
+const ANNIV = new Date(2026,10,30,0,0,0);   // 30 nov 2026
+function split(ms){const s=Math.floor(Math.abs(ms)/1000);return{d:Math.floor(s/86400),h:Math.floor(s%86400/3600),m:Math.floor(s%3600/60),s:s%60}}
+function fill(el,o){el.querySelectorAll('b').forEach(b=>b.textContent=o[b.dataset.k])}
+function tick(){
+  const now=new Date();
+  fill(document.getElementById('together'), split(now-START));
+  const left = ANNIV-now;
+  if(left>0) fill(document.getElementById('countdown'), split(left));
+  else { document.getElementById('countdown').style.display='none'; document.getElementById('anniv-done').style.display='block'; }
+}
+tick(); setInterval(tick,1000);
+
+/* Botella */
+document.getElementById('bottle').addEventListener('click',e=>{
+  const l=document.getElementById('letter'); l.classList.toggle('open');
+  document.getElementById('bottle-hint').textContent = l.classList.contains('open') ? 'Para Elsa 💌' : 'Toca la botella para abrirla';
+  burst(e.clientX,e.clientY,20);
+});
+
+function hearts(x,y,n=12){
+  const em=['💗','💖','💕','❤️','🫶'];
+  for(let i=0;i<n;i++){
+    const h=document.createElement('div'); h.className='heart-pop';
+    h.textContent=em[Math.floor(Math.random()*em.length)];
+    h.style.left=x+'px'; h.style.top=y+'px';
+    h.style.setProperty('--dx',(Math.random()-.5)*260+'px'); h.style.setProperty('--r',(Math.random()-.5)*90+'deg');
+    h.style.animationDelay=Math.random()*.4+'s';
+    document.body.appendChild(h); setTimeout(()=>h.remove(),2200);
+  }
+}
+let tt; function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
+
+/* =========================================================
+   MENÚ EN MÓVIL
+   ========================================================= */
+const menuBtn=document.getElementById('menu-btn'), menu=document.getElementById('menu');
+menuBtn.addEventListener('click',()=>{
+  const open=menu.classList.toggle('open'); menuBtn.classList.toggle('open',open);
+  menuBtn.setAttribute('aria-expanded',open); menuBtn.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');
+});
+menu.addEventListener('click',e=>{ if(e.target.closest('a')){ menu.classList.remove('open'); menuBtn.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); } });
+document.addEventListener('click',e=>{ if(menu.classList.contains('open') && !e.target.closest('.topbar')){ menu.classList.remove('open'); menuBtn.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); } });
+
+/* =========================================================
+   GALERÍA + FILTROS
+   ========================================================= */
+const gallery=document.getElementById('gallery');
+FOTOS.forEach(n=>{
+  const d=document.createElement('div'); d.className='g'; d.dataset.lb=n;
+  d.innerHTML=`<img src="${mini(n)}" alt="Recuerdo ${n}" loading="lazy">`;
+  gallery.appendChild(d);
+});
+const galeria=document.getElementById('galeria');
+function openGal(){ galeria.classList.add('open'); galeria.setAttribute('aria-hidden','false'); document.body.classList.add('gal-lock'); }
+function closeGal(){ galeria.classList.remove('open'); galeria.setAttribute('aria-hidden','true'); document.body.classList.remove('gal-lock'); }
+document.getElementById('open-gallery').addEventListener('click',openGal);
+document.getElementById('gal-close').addEventListener('click',closeGal);
+addEventListener('keydown',e=>{ if(e.key==='Escape' && galeria.classList.contains('open') && !lb.classList.contains('open')) closeGal(); });
+
+/* =========================================================
+   LIGHTBOX (clic en cualquier foto)
+   ========================================================= */
+const lb=document.getElementById('lightbox'), lbImg=document.getElementById('lb-img'), lbCount=document.getElementById('lb-count');
+let list=[], idx=0;
+function openLB(n){
+  // navega por las fotos visibles de la galería
+  list=FOTOS.slice();
+  if(!list.includes(n)) list=[n];
+  idx=list.indexOf(n); showLB(); lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+}
+function showLB(){ lbImg.style.opacity=0; const n=list[idx]; const im=new Image(); im.onload=()=>{lbImg.src=im.src;lbImg.style.opacity=1}; im.src=big(n); lbCount.textContent=`${idx+1} / ${list.length}`; }
+function step(d){ idx=(idx+d+list.length)%list.length; showLB(); }
+function closeLB(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); }
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-lb]'); if(t && !lb.contains(t)) openLB(+t.dataset.lb);
+});
+document.getElementById('lb-prev').onclick=e=>{e.stopPropagation();step(-1)};
+document.getElementById('lb-next').onclick=e=>{e.stopPropagation();step(1)};
+document.getElementById('lb-close').onclick=closeLB;
+lb.addEventListener('click',e=>{ if(e.target===lb) closeLB(); });
+addEventListener('keydown',e=>{
+  if(!lb.classList.contains('open')) return;
+  if(e.key==='Escape') closeLB(); if(e.key==='ArrowLeft') step(-1); if(e.key==='ArrowRight') step(1);
+});
+let tx=0; lb.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+lb.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>50) step(dx<0?1:-1);});
+
+/* =========================================================
+   APARICIÓN AL HACER SCROLL
+   ========================================================= */
+const io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} }),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* =========================================================
+   HUEVO DE PASCUA: escribe "reptiliana" en el teclado
+   ========================================================= */
+let typed='';
+addEventListener('keydown',e=>{
+  typed=(typed+e.key.toLowerCase()).slice(-10);
+  if(typed==='reptiliana'){ document.body.classList.toggle('reptil'); toast('🦎 Modo reptiliana activado'); }
+});
+</script>
+  </body>
+</html>
